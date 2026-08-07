@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>字忆 · Tự Ức — Học từ vựng tiếng Trung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F0E2;
+    --paper-dim:#ECE2C9;
+    --panel:#FBF7EC;
+    --ink:#242019;
+    --ink-soft:#5B5344;
+    --ink-faint:#8C8370;
+    --seal:#AE3A2E;
+    --seal-dim:#c98d85;
+    --jade:#3E6F5C;
+    --gold:#A07B2A;
+    --line:#DACD9F;
+    --line-soft:#E5DAB9;
+    --shadow: 0 1px 0 rgba(36,32,25,0.04), 0 8px 24px -12px rgba(36,32,25,0.18);
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(174,58,46,0.05), transparent 60%),
+      radial-gradient(900px 600px at 110% 10%, rgba(62,111,92,0.06), transparent 55%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Newsreader', Georgia, serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100%;
+  }
+  ::selection{ background: rgba(174,58,46,0.18); }
+  button{ font-family:inherit; }
+  input, textarea, select{ font-family:'Newsreader', serif; }
+  .hanzi{ font-family:'Noto Serif SC', serif; }
+  .mono{ font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
+ 
+  a{ color:inherit; }
+ 
+  /* ---------- layout shell ---------- */
+  #app{
+    max-width:920px;
+    margin:0 auto;
+    padding: 20px 20px 64px;
+    min-height:100%;
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .brand .mark{
+    width:38px;height:38px;
+    border:1.5px solid var(--seal);
+    color:var(--seal);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif SC', serif;
+    font-weight:700;
+    font-size:20px;
+    border-radius:4px;
+    transform:rotate(-1deg);
+    flex:none;
+  }
+  .brand .title{
+    line-height:1.1;
+  }
+  .brand .title .zh{ font-family:'Noto Serif SC', serif; font-weight:700; font-size:19px; }
+  .brand .title .vi{ font-size:12px; color:var(--ink-faint); letter-spacing:0.06em; text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
+ 
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    background:var(--paper-dim);
+    padding:4px;
+    border-radius:999px;
+  }
+  nav.tabs button{
+    border:none;
+    background:transparent;
+    padding:8px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:14px;
+    color:var(--ink-soft);
+    transition:background .15s ease, color .15s ease;
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.02em;
+  }
+  nav.tabs button.active{
+    background:var(--ink);
+    color:var(--paper);
+  }
+  nav.tabs button:hover:not(.active){ color:var(--ink); }
+  nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{
+    outline:2px solid var(--seal);
+    outline-offset:2px;
+  }
+ 
+  .view{ display:none; }
+  .view.active{ display:block; }
+ 
+  /* ---------- study view ---------- */
+  .session-bar{
+    display:flex;
+    gap:10px;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    padding:7px 13px;
+    border-radius:999px;
+    font-size:13px;
+    box-shadow:var(--shadow);
+  }
+  .chip .dot{ width:7px;height:7px;border-radius:50%; }
+  .chip.new .dot{ background:var(--gold); }
+  .chip.due .dot{ background:var(--seal); }
+  .chip.done .dot{ background:var(--jade); }
+  .chip b{ font-family:'IBM Plex Mono', monospace; }
+ 
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:420px;
+    justify-content:center;
+  }
+ 
+  .flash-wrap{
+    width:100%;
+    max-width:440px;
+    perspective:1600px;
+  }
+  .flashcard{
+    position:relative;
+    width:100%;
+    min-height:280px;
+    cursor:pointer;
+    transform-style:preserve-3d;
+    transition:transform .5s cubic-bezier(.4,.2,.2,1);
+  }
+  .flashcard.flipped{ transform:rotateY(180deg); }
+  .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:32px 28px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    clip-path:polygon(0 0.5%, 99.6% 0%, 100% 99.6%, 0.4% 100%);
+  }
+  .face.front{}
+  .face.back{ transform:rotateY(180deg); gap:10px; }
+ 
+  .face .tag-row{ position:absolute; top:14px; left:18px; display:flex; gap:6px; flex-wrap:wrap; max-width:70%; }
+  .face .tag-row span{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-faint); border:1px solid var(--line); padding:2px 7px; border-radius:999px; }
+ 
+  .front .hanzi-big{
+    font-size:clamp(3.4rem, 13vw, 5.6rem);
+    font-weight:700;
+    line-height:1;
+    color:var(--ink);
+  }
+  .front .hint{
+    margin-top:18px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-faint);
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+  }
+ 
+  .back .pinyin{ font-family:'IBM Plex Mono', monospace; font-size:1.15rem; color:var(--seal); }
+  .back .hanzi-small{ font-size:1.6rem; font-weight:600; margin-bottom:2px; }
+  .back .meaning{ font-size:1.25rem; font-weight:500; margin-top:2px; }
+  .back .example{ font-size:0.95rem; color:var(--ink-soft); margin-top:8px; font-style:italic; max-width:340px; }
+  .speaker-btn{
+    margin-top:12px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:12px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .speaker-btn:hover{ border-color:var(--seal); color:var(--seal); }
+ 
+  .rate-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    width:100%;
+    max-width:440px;
+    margin-top:22px;
+  }
+  .rate-btn{
+    border:1px solid var(--line-soft);
+    background:var(--panel);
+    border-radius:8px;
+    padding:10px 4px 9px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .rate-btn:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
+  .rate-btn .key{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-faint); }
+  .rate-btn .label{ font-size:14px; font-weight:600; }
+  .rate-btn .interval{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint); }
+  .rate-btn.again .label{ color:var(--ink-soft); }
+  .rate-btn.hard .label{ color:var(--gold); }
+  .rate-btn.good .label{ color:var(--jade); }
+  .rate-btn.easy .label{ color:var(--seal); }
+  .rate-row.disabled{ opacity:0; pointer-events:none; }
+ 
+  .flip-cta{
+    margin-top:22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-faint);
+    letter-spacing:0.04em;
+  }
+  .flip-cta kbd{
+    border:1px solid var(--line);
+    padding:1px 7px;
+    border-radius:4px;
+    background:var(--paper-dim);
+    font-family:'IBM Plex Mono', monospace;
+  }
+ 
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+  }
+  .empty-state .glyph{ font-family:'Noto Serif SC', serif; font-size:2.6rem; color:var(--jade); margin-bottom:12px; }
+  .empty-state h2{ font-size:1.3rem; margin:0 0 8px; }
+  .empty-state p{ color:var(--ink-soft); margin:0 0 20px; }
+  .btn-primary{
+    border:none;
+    background:var(--ink);
+    color:var(--paper);
+    padding:11px 22px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:14px;
+  }
+  .btn-primary:hover{ background:var(--seal); }
+ 
+  /* ---------- manage view ---------- */
+  .toolbar{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .search-input{
+    flex:1;
+    min-width:180px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    padding:9px 14px;
+    border-radius:8px;
+    font-size:14px;
+  }
+  .tag-filters{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tag-filters button{
+    border:1px solid var(--line);
+    background:var(--panel);
+    padding:5px 11px;
+    border-radius:999px;
+    font-size:12px;
+    font-family:'IBM Plex Mono',monospace;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .tag-filters button.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+ 
+  .add-btn{
+    border:none;
+    background:var(--seal);
+    color:var(--paper);
+    padding:9px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    white-space:nowrap;
+  }
+  .add-btn:hover{ background:#8f2e24; }
+ 
+  .word-list{ display:flex; flex-direction:column; gap:8px; }
+  .word-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:8px;
+    padding:12px 14px;
+    cursor:pointer;
+  }
+  .word-row:hover{ border-color:var(--seal); }
+  .word-row .h{ font-family:'Noto Serif SC', serif; font-size:1.4rem; font-weight:600; width:64px; flex:none; }
+  .word-row .mid{ flex:1; min-width:0; }
+  .word-row .p{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--seal); }
+  .word-row .m{ font-size:14px; color:var(--ink); }
+  .word-row .tags{ display:flex; gap:5px; flex-wrap:wrap; margin-top:4px; }
+  .word-row .tags span{ font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--ink-faint); border:1px solid var(--line); padding:1px 6px; border-radius:999px; }
+  .word-row .state-badge{ font-size:10px; font-family:'IBM Plex Mono',monospace; padding:2px 8px; border-radius:999px; flex:none; }
+  .state-badge.new{ background:rgba(160,123,42,0.12); color:var(--gold); }
+  .state-badge.learning{ background:rgba(174,58,46,0.1); color:var(--seal); }
+  .state-badge.review{ background:rgba(62,111,92,0.12); color:var(--jade); }
+  .word-row .del{ flex:none; border:none; background:transparent; color:var(--ink-faint); cursor:pointer; font-size:16px; padding:4px 6px; }
+  .word-row .del:hover{ color:var(--seal); }
+ 
+  .empty-manage{ text-align:center; padding:50px 20px; color:var(--ink-soft); }
+ 
+  /* ---------- stats view ---------- */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;
+    margin-bottom:28px;
+  }
+  .stat-card{
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    padding:16px;
+  }
+  .stat-card .num{ font-family:'IBM Plex Mono',monospace; font-size:1.8rem; font-weight:600; }
+  .stat-card .lbl{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+ 
+  .gauge-row{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    padding:20px;
+    flex-wrap:wrap;
+  }
+  .gauge{
+    width:120px;height:120px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .gauge .inner{
+    width:92px;height:92px;
+    border-radius:50%;
+    background:var(--panel);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .gauge .inner b{ font-family:'IBM Plex Mono',monospace; font-size:1.3rem; }
+  .gauge .inner span{ font-size:10px; color:var(--ink-faint); }
+  .gauge-desc h3{ margin:0 0 6px; font-size:1.05rem; }
+  .gauge-desc p{ margin:0; color:var(--ink-soft); font-size:13.5px; max-width:340px; }
+ 
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(36,32,25,0.35);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .overlay.show{ display:flex; }
+  .modal{
+    background:var(--panel);
+    border-radius:12px;
+    padding:26px;
+    width:100%;
+    max-width:440px;
+    box-shadow:0 20px 60px -20px rgba(0,0,0,0.35);
+    max-height:90vh;
+    overflow-y:auto;
+  }
+  .modal h3{ margin:0 0 18px; font-size:1.2rem; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); margin-bottom:5px; }
+  .field input, .field textarea{
+    width:100%;
+    border:1px solid var(--line);
+    background:var(--paper);
+    padding:9px 11px;
+    border-radius:7px;
+    font-size:14px;
+  }
+  .field textarea{ resize:vertical; min-height:52px; }
+  .field .req{ color:var(--seal); }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+  .btn-ghost{ border:1px solid var(--line); background:transparent; padding:9px 16px; border-radius:8px; cursor:pointer; font-size:13.5px; color:var(--ink-soft); }
+  .btn-ghost:hover{ border-color:var(--ink); color:var(--ink); }
+ 
+  /* ---------- stamp fx ---------- */
+  #stampFx{
+    position:fixed;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%) scale(0.5) rotate(-12deg);
+    opacity:0;
+    pointer-events:none;
+    z-index:60;
+    font-family:'Noto Serif SC', serif;
+    font-weight:900;
+    font-size:5.5rem;
+    border:6px solid currentColor;
+    border-radius:14px;
+    padding:2px 22px;
+  }
+  #stampFx.show{ animation:stampPop .65s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes stampPop{
+    0%{ transform:translate(-50%,-50%) scale(1.7) rotate(-12deg); opacity:0; }
+    35%{ transform:translate(-50%,-50%) scale(0.94) rotate(-8deg); opacity:0.9; }
+    55%{ transform:translate(-50%,-50%) scale(1.02) rotate(-10deg); opacity:0.85; }
+    100%{ transform:translate(-50%,-50%) scale(1) rotate(-10deg); opacity:0; }
+  }
+ 
+  footer.credit{
+    text-align:center;
+    margin-top:50px;
+    font-size:11px;
+    color:var(--ink-faint);
+    font-family:'IBM Plex Mono',monospace;
+  }
+ 
+  @media (max-width:520px){
+    .rate-btn .interval{ display:none; }
+    .brand .title .vi{ display:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .flashcard, #stampFx, .rate-btn{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+ 
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">忆</div>
+      <div class="title">
+        <div class="zh">字忆 · Tự Ức</div>
+        <div class="vi">Học Hán ngữ bằng SRS</div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button data-view="study" class="active">Học hôm nay</button>
+      <button data-view="manage">Kho từ vựng</button>
+      <button data-view="stats">Thống kê</button>
+    </nav>
+  </div>
+ 
+  <!-- STUDY VIEW -->
+  <section class="view active" id="view-study">
+    <div class="session-bar" id="sessionBar"></div>
+    <div class="stage" id="stage"></div>
+  </section>
+ 
+  <!-- MANAGE VIEW -->
+  <section class="view" id="view-manage">
+    <div class="toolbar">
+      <input type="text" class="search-input" id="searchInput" placeholder="Tìm theo chữ Hán, pinyin, nghĩa...">
+      <button class="btn-ghost" id="exportBtn">Xuất dữ liệu</button>
+      <button class="btn-ghost" id="exportTxtBtn">Xuất chữ Hán (.txt)</button>
+      <button class="btn-ghost" id="importBtn">Nhập dữ liệu</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <button class="add-btn" id="addBtn">+ Thêm từ</button>
+    </div>
+    <div class="tag-filters" id="tagFilters"></div>
+    <div class="word-list" id="wordList" style="margin-top:14px;"></div>
+  </section>
+ 
+  <!-- STATS VIEW -->
+  <section class="view" id="view-stats">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="gauge-row">
+      <div class="gauge" id="gaugeOuter">
+        <div class="inner"><b id="gaugePct">0%</b><span>đã thuộc</span></div>
+      </div>
+      <div class="gauge-desc">
+        <h3>Mức độ ghi nhớ</h3>
+        <p>Tỉ lệ từ đã bước vào giai đoạn ôn tập dài hạn (review) trên tổng số từ trong kho. Càng ôn đều, vòng tròn càng đầy.</p>
+      </div>
+    </div>
+  </section>
+ 
+  <footer class="credit">Dữ liệu được lưu trong trình duyệt của bạn — không cần tài khoản.</footer>
+</div>
+ 
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Thêm từ mới</h3>
+    <form id="wordForm">
+      <div class="field">
+        <label>Chữ Hán <span class="req">*</span></label>
+        <input type="text" id="f-hanzi" required>
+      </div>
+      <div class="field">
+        <label>Phiên âm (Pinyin) <span class="req">*</span></label>
+        <input type="text" id="f-pinyin" required>
+      </div>
+      <div class="field">
+        <label>Nghĩa tiếng Việt <span class="req">*</span></label>
+        <input type="text" id="f-meaning" required>
+      </div>
+      <div class="field">
+        <label>Câu ví dụ</label>
+        <textarea id="f-example"></textarea>
+      </div>
+      <div class="field">
+        <label>Tag (phân cách bằng dấu phẩy)</label>
+        <input type="text" id="f-tags" placeholder="HSK1, giao tiếp">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="cancelBtn">Hủy</button>
+        <button type="submit" class="btn-primary">Lưu từ</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<div id="stampFx"></div>
+ 
+<script>
+(function(){
+  "use strict";
+ 
+  /* ============ CONFIG ============ */
+  const STORAGE_KEY = "hanzi_srs_cards_v1";
+  const COUNTER_KEY = "hanzi_srs_new_counter_v1";
+  const NEW_CARDS_PER_DAY = 10;
+  const MIN_EASE = 1.3;
+ 
+  /* ============ STORAGE ============ */
+  function loadCards(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){ return null; }
+  }
+  function saveCards(cards){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  }
+  function loadCounter(){
+    try{
+      const raw = localStorage.getItem(COUNTER_KEY);
+      if(!raw) return {date:null, count:0};
+      return JSON.parse(raw);
+    }catch(e){ return {date:null, count:0}; }
+  }
+  function saveCounter(c){ localStorage.setItem(COUNTER_KEY, JSON.stringify(c)); }
+ 
+  function todayKey(){ return new Date().toDateString(); }
+ 
+  function newId(){
+    return 'w_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }
+ 
+  function seedData(){
+    const now = Date.now();
+    const words = [];
+    return words.map(w=>({
+      id:newId(),
+      hanzi:w[0], pinyin:w[1], meaning:w[2], example:w[3],
+      tags:w[4].split(',').map(t=>t.trim()).filter(Boolean),
+      state:'new', ease:2.5, reps:0, interval:0, lapses:0,
+      due:now, created:now, lastReviewed:null
+    }));
+  }
+ 
+  let CARDS = loadCards();
+  if(!CARDS){ CARDS = seedData(); saveCards(CARDS); }
+ 
+  function persist(){ saveCards(CARDS); }
+ 
+  /* ============ SRS ALGORITHM (SM-2 inspired) ============ */
+  function computeNext(card, rating){
+    const c = Object.assign({}, card);
+    const now = Date.now();
+    let ease = c.ease || 2.5;
+    let reps = c.reps || 0;
+    let interval = c.interval || 0;
+    let dueDelayMs, nextInterval;
+ 
+    if(rating === 'again'){
+      ease = Math.max(MIN_EASE, ease - 0.2);
+      reps = 0;
+      nextInterval = 1/1440; // 1 minute in days
+      dueDelayMs = 60*1000;
+      c.lapses = (c.lapses||0) + 1;
+      c.state = 'learning';
+    } else if(rating === 'hard'){
+      ease = Math.max(MIN_EASE, ease - 0.15);
+      if(reps < 2){
+        nextInterval = 0.5; // 12 hours
+        dueDelayMs = 12*60*60*1000;
+      } else {
+        nextInterval = Math.max(interval*1.2, interval + 0.5);
+        dueDelayMs = nextInterval*86400000;
+      }
+      c.state = 'learning';
+    } else if(rating === 'good'){
+      if(reps === 0) nextInterval = 1;
+      else if(reps === 1) nextInterval = 3;
+      else nextInterval = Math.round(interval*ease*10)/10;
+      reps += 1;
+      dueDelayMs = nextInterval*86400000;
+      c.state = 'review';
+    } else { // easy
+      ease = Math.min(3.2, ease + 0.15);
+      nextInterval = reps === 0 ? 4 : Math.round(interval*ease*1.3*10)/10;
+      reps += 1;
+      dueDelayMs = nextInterval*86400000;
+      c.state = 'review';
+    }
+ 
+    c.ease = ease;
+    c.reps = reps;
+    c.interval = nextInterval;
+    c.due = now + dueDelayMs;
+    c.lastReviewed = now;
+    return c;
+  }
+ 
+  function formatDelay(ms){
+    const min = ms/60000;
+    if(min < 60) return Math.round(min) + ' phút';
+    const hrs = min/60;
+    if(hrs < 24) return Math.round(hrs) + ' giờ';
+    const days = hrs/24;
+    if(days < 30) return (Math.round(days*10)/10) + ' ngày';
+    return Math.round(days/30*10)/10 + ' tháng';
+  }
+ 
+  function previewLabel(card, rating){
+    const before = card.due;
+    const next = computeNext(card, rating);
+    return formatDelay(next.due - Date.now());
+  }
+ 
+  /* ============ SESSION QUEUE ============ */
+  let queue = [];
+  let currentCard = null;
+  let flipped = false;
+ 
+  function buildQueue(){
+    const now = Date.now();
+    const due = CARDS.filter(c => c.state !== 'new' && c.due <= now).sort((a,b)=>a.due-b.due);
+    const newOnes = CARDS.filter(c => c.state === 'new').sort((a,b)=>a.created-b.created);
+ 
+    let counter = loadCounter();
+    if(counter.date !== todayKey()){ counter = {date:todayKey(), count:0}; saveCounter(counter); }
+    const remainingSlots = Math.max(0, NEW_CARDS_PER_DAY - counter.count);
+    const newSlice = newOnes.slice(0, remainingSlots);
+ 
+    return due.map(c=>c.id).concat(newSlice.map(c=>c.id));
+  }
+ 
+  function nextDueTimeLabel(){
+    const future = CARDS.filter(c => c.state !== 'new').sort((a,b)=>a.due-b.due)[0];
+    if(!future) return null;
+    const diff = future.due - Date.now();
+    if(diff <= 0) return null;
+    return formatDelay(diff);
+  }
+ 
+  function getCardById(id){ return CARDS.find(c=>c.id===id); }
+ 
+  function startSession(){
+    queue = buildQueue();
+    renderSessionBar();
+    drawNextCard();
+  }
+ 
+  function renderSessionBar(){
+    const bar = document.getElementById('sessionBar');
+    const now = Date.now();
+    const dueCount = CARDS.filter(c=>c.state!=='new' && c.due<=now).length + queue.filter(id=>{
+      const c=getCardById(id); return c && c.state!=='new';
+    }).length;
+    // simpler: recompute directly from queue + remaining
+    const dueInQueue = queue.map(getCardById).filter(c=>c && c.state!=='new').length;
+    const newInQueue = queue.map(getCardById).filter(c=>c && c.state==='new').length;
+ 
+    bar.innerHTML = `
+      <div class="chip due"><span class="dot"></span>Cần ôn: <b>${dueInQueue}</b></div>
+      <div class="chip new"><span class="dot"></span>Từ mới: <b>${newInQueue}</b></div>
+      <div class="chip done"><span class="dot"></span>Tổng kho: <b>${CARDS.length}</b></div>
+    `;
+  }
+ 
+  function drawNextCard(){
+    flipped = false;
+    if(queue.length === 0){
+      renderEmptyState();
+      renderSessionBar();
+      return;
+    }
+    const id = queue[0];
+    currentCard = getCardById(id);
+    if(!currentCard){ queue.shift(); return drawNextCard(); }
+    renderStage();
+    renderSessionBar();
+  }
+ 
+  function renderEmptyState(){
+    const stage = document.getElementById('stage');
+    const nextLabel = nextDueTimeLabel();
+    stage.innerHTML = `
+      <div class="empty-state">
+        <div class="glyph">好</div>
+        <h2>Xong hết cho hôm nay!</h2>
+        <p>${nextLabel ? 'Thẻ tiếp theo sẽ đến hạn sau khoảng ' + nextLabel + '.' : 'Bạn chưa có từ nào cần ôn. Hãy thêm từ mới vào kho.'}</p>
+        <button class="btn-primary" id="goManageBtn">Thêm từ vào kho</button>
+      </div>
+    `;
+    document.getElementById('goManageBtn').addEventListener('click', ()=>switchView('manage'));
+  }
+ 
+  function renderStage(){
+    const stage = document.getElementById('stage');
+    const c = currentCard;
+    const tagsHtml = (c.tags||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('');
+ 
+    stage.innerHTML = `
+      <div class="flash-wrap">
+        <div class="flashcard" id="flashcard">
+          <div class="face front">
+            <div class="tag-row">${tagsHtml}</div>
+            <div class="hanzi-big hanzi">${escapeHtml(c.hanzi)}</div>
+            <div class="hint">Nhấn <kbd>Space</kbd> hoặc chạm để lật thẻ</div>
+          </div>
+          <div class="face back">
+            <div class="tag-row">${tagsHtml}</div>
+            <div class="hanzi-small hanzi">${escapeHtml(c.hanzi)}</div>
+            <div class="pinyin mono">${escapeHtml(c.pinyin)}</div>
+            <div class="meaning">${escapeHtml(c.meaning)}</div>
+            ${c.example ? `<div class="example">${escapeHtml(c.example)}</div>` : ''}
+            <button class="speaker-btn" id="speakBtn">🔊 Phát âm</button>
+          </div>
+        </div>
+      </div>
+      <div class="rate-row disabled" id="rateRow">
+        ${rateBtnHtml('again','1','Quên')}
+        ${rateBtnHtml('hard','2','Khó')}
+        ${rateBtnHtml('good','3','Tốt')}
+        ${rateBtnHtml('easy','4','Dễ')}
+      </div>
+    `;
+ 
+    document.getElementById('flashcard').addEventListener('click', flipCard);
+    document.getElementById('rateRow').querySelectorAll('.rate-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{ e.stopPropagation(); rate(btn.dataset.rating); });
+    });
+  }
+ 
+  function rateBtnHtml(rating, key, label){
+    const interval = currentCard ? previewLabel(currentCard, rating) : '';
+    return `<button class="rate-btn ${rating}" data-rating="${rating}">
+      <span class="key">${key}</span>
+      <span class="label">${label}</span>
+      <span class="interval mono">${interval}</span>
+    </button>`;
+  }
+ 
+  function flipCard(){
+    if(flipped) return;
+    flipped = true;
+    document.getElementById('flashcard').classList.add('flipped');
+    document.getElementById('rateRow').classList.remove('disabled');
+    speak(currentCard.hanzi);
+    const sb = document.getElementById('speakBtn');
+    if(sb) sb.addEventListener('click', (e)=>{ e.stopPropagation(); speak(currentCard.hanzi); });
+  }
+ 
+  function rate(rating){
+    if(!currentCard || !flipped) return;
+    const wasNew = currentCard.state === 'new';
+    const updated = computeNext(currentCard, rating);
+    Object.assign(currentCard, updated);
+    persist();
+ 
+    if(wasNew){
+      let counter = loadCounter();
+      if(counter.date !== todayKey()) counter = {date:todayKey(), count:0};
+      counter.count += 1;
+      saveCounter(counter);
+    }
+ 
+    stampFeedback(rating);
+ 
+    queue.shift();
+    if(rating === 'again'){
+      // resurface soon within the same session
+      const insertAt = Math.min(3, queue.length);
+      queue.splice(insertAt, 0, currentCard.id);
+    }
+    setTimeout(drawNextCard, 260);
+  }
+ 
+  function stampFeedback(rating){
+    const el = document.getElementById('stampFx');
+    const map = {
+      again:{char:'忘', color:'var(--ink-soft)'},
+      hard:{char:'难', color:'var(--gold)'},
+      good:{char:'好', color:'var(--jade)'},
+      easy:{char:'易', color:'var(--seal)'}
+    };
+    const m = map[rating];
+    el.textContent = m.char;
+    el.style.color = m.color;
+    el.classList.remove('show');
+    void el.offsetWidth; // restart animation
+    el.classList.add('show');
+  }
+ 
+  /* ============ TTS ============ */
+  let voicesCache = null;
+  function getZhVoice(){
+    if(!window.speechSynthesis) return null;
+    const voices = speechSynthesis.getVoices();
+    if(voices && voices.length) voicesCache = voices;
+    if(!voicesCache) return null;
+    return voicesCache.find(v=>v.lang && v.lang.toLowerCase().startsWith('zh')) || null;
+  }
+  if(window.speechSynthesis){
+    speechSynthesis.onvoiceschanged = ()=>{ voicesCache = speechSynthesis.getVoices(); };
+  }
+  function speak(text){
+    if(!window.speechSynthesis || !text) return;
+    try{
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      const v = getZhVoice();
+      if(v) u.voice = v;
+      u.rate = 0.95;
+      speechSynthesis.speak(u);
+    }catch(e){ /* TTS not available, fail silently */ }
+  }
+ 
+  /* ============ VIEW SWITCHING ============ */
+  function switchView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+name).classList.add('active');
+    document.querySelectorAll('nav.tabs button').forEach(b=>{
+      b.classList.toggle('active', b.dataset.view === name);
+    });
+    if(name === 'study') startSession();
+    if(name === 'manage') renderManage();
+    if(name === 'stats') renderStats();
+  }
+  document.querySelectorAll('nav.tabs button').forEach(b=>{
+    b.addEventListener('click', ()=>switchView(b.dataset.view));
+  });
+ 
+  /* ============ MANAGE VIEW ============ */
+  let activeTagFilter = null;
+  let searchTerm = '';
+ 
+  function allTags(){
+    const set = new Set();
+    CARDS.forEach(c=>(c.tags||[]).forEach(t=>set.add(t)));
+    return Array.from(set).sort();
+  }
+ 
+  function renderManage(){
+    const filters = document.getElementById('tagFilters');
+    const tags = allTags();
+    filters.innerHTML = tags.map(t=>`<button data-tag="${escapeHtml(t)}" class="${activeTagFilter===t?'active':''}">${escapeHtml(t)}</button>`).join('');
+    filters.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        activeTagFilter = (activeTagFilter === btn.dataset.tag) ? null : btn.dataset.tag;
+        renderManage();
+      });
+    });
+    renderWordList();
+  }
+ 
+  function renderWordList(){
+    const list = document.getElementById('wordList');
+    let items = CARDS.slice().sort((a,b)=>b.created-a.created);
+    if(activeTagFilter){
+      items = items.filter(c=>(c.tags||[]).includes(activeTagFilter));
+    }
+    if(searchTerm){
+      const s = searchTerm.toLowerCase();
+      items = items.filter(c =>
+        c.hanzi.toLowerCase().includes(s) ||
+        c.pinyin.toLowerCase().includes(s) ||
+        c.meaning.toLowerCase().includes(s) ||
+        (c.tags||[]).some(t=>t.toLowerCase().includes(s))
+      );
+    }
+    if(items.length === 0){
+      list.innerHTML = `<div class="empty-manage">Không có từ nào khớp. Hãy thử từ khóa khác hoặc thêm từ mới.</div>`;
+      return;
+    }
+    list.innerHTML = items.map(c=>`
+      <div class="word-row" data-id="${c.id}">
+        <div class="h hanzi">${escapeHtml(c.hanzi)}</div>
+        <div class="mid">
+          <div class="p">${escapeHtml(c.pinyin)}</div>
+          <div class="m">${escapeHtml(c.meaning)}</div>
+          <div class="tags">${(c.tags||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('')}</div>
+        </div>
+        <div class="state-badge ${c.state}">${stateLabel(c.state)}</div>
+        <button class="del" title="Xóa từ" data-id="${c.id}">✕</button>
+      </div>
+    `).join('');
+ 
+    list.querySelectorAll('.word-row').forEach(row=>{
+      row.addEventListener('click', (e)=>{
+        if(e.target.classList.contains('del')) return;
+        openEditModal(row.dataset.id);
+      });
+    });
+    list.querySelectorAll('.del').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        deleteWord(btn.dataset.id);
+      });
+    });
+  }
+ 
+  function stateLabel(s){
+    if(s==='new') return 'Mới';
+    if(s==='learning') return 'Đang học';
+    return 'Đã ôn';
+  }
+ 
+  document.getElementById('searchInput').addEventListener('input', (e)=>{
+    searchTerm = e.target.value;
+    renderWordList();
+  });
+ 
+  function deleteWord(id){
+    if(!confirm('Xóa từ này khỏi kho từ vựng?')) return;
+    CARDS = CARDS.filter(c=>c.id!==id);
+    persist();
+    renderManage();
+  }
+ 
+  /* ============ MODAL (ADD / EDIT) ============ */
+  const overlay = document.getElementById('overlay');
+  const form = document.getElementById('wordForm');
+  let editingId = null;
+ 
+  function openAddModal(){
+    editingId = null;
+    document.getElementById('modalTitle').textContent = 'Thêm từ mới';
+    form.reset();
+    overlay.classList.add('show');
+    document.getElementById('f-hanzi').focus();
+  }
+  function openEditModal(id){
+    const c = getCardById(id);
+    if(!c) return;
+    editingId = id;
+    document.getElementById('modalTitle').textContent = 'Chỉnh sửa từ';
+    document.getElementById('f-hanzi').value = c.hanzi;
+    document.getElementById('f-pinyin').value = c.pinyin;
+    document.getElementById('f-meaning').value = c.meaning;
+    document.getElementById('f-example').value = c.example || '';
+    document.getElementById('f-tags').value = (c.tags||[]).join(', ');
+    overlay.classList.add('show');
+  }
+  function closeModal(){ overlay.classList.remove('show'); editingId = null; }
+ 
+  document.getElementById('addBtn').addEventListener('click', openAddModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+ 
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const hanzi = document.getElementById('f-hanzi').value.trim();
+    const pinyin = document.getElementById('f-pinyin').value.trim();
+    const meaning = document.getElementById('f-meaning').value.trim();
+    const example = document.getElementById('f-example').value.trim();
+    const tags = document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+ 
+    if(!hanzi || !pinyin || !meaning){ return; }
+ 
+    if(editingId){
+      const c = getCardById(editingId);
+      Object.assign(c, {hanzi, pinyin, meaning, example, tags});
+    } else {
+      CARDS.push({
+        id:newId(), hanzi, pinyin, meaning, example, tags,
+        state:'new', ease:2.5, reps:0, interval:0, lapses:0,
+        due:Date.now(), created:Date.now(), lastReviewed:null
+      });
+    }
+    persist();
+    closeModal();
+    renderManage();
+  });
+ 
+  /* ============ EXPORT / IMPORT ============ */
+  function exportJSON(){
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      app: 'hanzi-srs',
+      version: 1,
+      cards: CARDS
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `hanzi-srs-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+ 
+  function importJSONFile(file){
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      let data;
+      try{ data = JSON.parse(e.target.result); }
+      catch(err){ alert('File không hợp lệ — không đọc được JSON.'); return; }
+ 
+      const incoming = Array.isArray(data) ? data : (Array.isArray(data.cards) ? data.cards : null);
+      if(!incoming){ alert('File không đúng định dạng dữ liệu từ vựng.'); return; }
+ 
+      let added = 0, updated = 0, skipped = 0;
+      incoming.forEach(w=>{
+        if(!w || !w.hanzi || !w.pinyin || !w.meaning){ skipped++; return; }
+        const existing = w.id ? getCardById(w.id) : null;
+        if(existing){
+          Object.assign(existing, w);
+          updated++;
+        } else {
+          CARDS.push(Object.assign({
+            id:newId(), state:'new', ease:2.5, reps:0, interval:0, lapses:0,
+            due:Date.now(), created:Date.now(), lastReviewed:null, tags:[]
+          }, w, { id: newId() })); // always assign a fresh id to avoid collisions across devices
+          added++;
+        }
+      });
+      persist();
+      renderManage();
+      alert(`Nhập xong: ${added} từ mới, ${updated} từ cập nhật, ${skipped} dòng bị bỏ qua.`);
+    };
+    reader.readAsText(file);
+  }
+ 
+  function exportHanziTxt(){
+    if(CARDS.length === 0){ alert('Kho từ vựng đang trống.'); return; }
+    const lines = CARDS.slice().sort((a,b)=>a.created-b.created).map(c=>c.hanzi).join('\n');
+    const blob = new Blob([lines], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `hanzi-list-${stamp}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+ 
+  document.getElementById('exportBtn').addEventListener('click', exportJSON);
+  document.getElementById('exportTxtBtn').addEventListener('click', exportHanziTxt);
+  document.getElementById('importBtn').addEventListener('click', ()=>{
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(file) importJSONFile(file);
+    e.target.value = '';
+  });
+ 
+  /* ============ STATS VIEW ============ */
+  function renderStats(){
+    const total = CARDS.length;
+    const newCount = CARDS.filter(c=>c.state==='new').length;
+    const learningCount = CARDS.filter(c=>c.state==='learning').length;
+    const reviewCount = CARDS.filter(c=>c.state==='review').length;
+    const now = Date.now();
+    const dueNow = CARDS.filter(c=>c.state!=='new' && c.due<=now).length;
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const reviewedToday = CARDS.filter(c=>c.lastReviewed && c.lastReviewed >= todayStart.getTime()).length;
+ 
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="num mono">${total}</div><div class="lbl">Tổng số từ</div></div>
+      <div class="stat-card"><div class="num mono">${newCount}</div><div class="lbl">Từ mới</div></div>
+      <div class="stat-card"><div class="num mono">${learningCount}</div><div class="lbl">Đang học</div></div>
+      <div class="stat-card"><div class="num mono">${dueNow}</div><div class="lbl">Cần ôn ngay</div></div>
+      <div class="stat-card"><div class="num mono">${reviewedToday}</div><div class="lbl">Đã ôn hôm nay</div></div>
+    `;
+ 
+    const pct = total ? Math.round((reviewCount/total)*100) : 0;
+    document.getElementById('gaugePct').textContent = pct + '%';
+    document.getElementById('gaugeOuter').style.background =
+      `conic-gradient(var(--jade) ${pct}%, var(--line-soft) 0)`;
+  }
+ 
+  /* ============ UTIL ============ */
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, s=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[s]));
+  }
+ 
+  /* ============ KEYBOARD SHORTCUTS ============ */
+  document.addEventListener('keydown', (e)=>{
+    const activeView = document.querySelector('.view.active').id;
+    if(activeView !== 'view-study') return;
+    const tag = document.activeElement.tagName;
+    if(tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if(overlay.classList.contains('show')) return;
+    if(!currentCard) return;
+ 
+    if(e.code === 'Space'){
+      e.preventDefault();
+      if(!flipped) flipCard();
+    } else if(['Digit1','Digit2','Digit3','Digit4'].includes(e.code)){
+      if(!flipped) return;
+      const map = {Digit1:'again', Digit2:'hard', Digit3:'good', Digit4:'easy'};
+      rate(map[e.code]);
+    }
+  });
+ 
+  /* ============ INIT ============ */
+  startSession();
+ 
+})();
+</script>
+</body>
+</html>
