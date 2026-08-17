@@ -21,30 +21,50 @@
     --gold:#A07B2A;
     --line:#DACD9F;
     --line-soft:#E5DAB9;
+    --glow1: rgba(174,58,46,0.05);
+    --glow2: rgba(62,111,92,0.06);
     --shadow: 0 1px 0 rgba(36,32,25,0.04), 0 8px 24px -12px rgba(36,32,25,0.18);
     --radius: 10px;
+  }
+  :root[data-theme="dark"]{
+    --paper:#1E1B16;
+    --paper-dim:#2A251C;
+    --panel:#262219;
+    --ink:#EDE6D6;
+    --ink-soft:#B7AE99;
+    --ink-faint:#867C64;
+    --seal:#D9695C;
+    --seal-dim:#7a3a34;
+    --jade:#74B096;
+    --gold:#CBA35A;
+    --line:#41392A;
+    --line-soft:#332C21;
+    --glow1: rgba(217,105,92,0.08);
+    --glow2: rgba(116,176,150,0.07);
+    --shadow: 0 1px 0 rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.55);
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{
     margin:0;
     background:
-      radial-gradient(1200px 700px at 10% -10%, rgba(174,58,46,0.05), transparent 60%),
-      radial-gradient(900px 600px at 110% 10%, rgba(62,111,92,0.06), transparent 55%),
+      radial-gradient(1200px 700px at 10% -10%, var(--glow1), transparent 60%),
+      radial-gradient(900px 600px at 110% 10%, var(--glow2), transparent 55%),
       var(--paper);
     color:var(--ink);
     font-family:'Newsreader', Georgia, serif;
     -webkit-font-smoothing:antialiased;
     min-height:100%;
+    transition:background-color .2s ease, color .2s ease;
   }
   ::selection{ background: rgba(174,58,46,0.18); }
   button{ font-family:inherit; }
   input, textarea, select{ font-family:'Newsreader', serif; }
   .hanzi{ font-family:'Noto Serif SC', serif; }
   .mono{ font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
- 
+
   a{ color:inherit; }
- 
+
   /* ---------- layout shell ---------- */
   #app{
     max-width:920px;
@@ -84,7 +104,7 @@
   }
   .brand .title .zh{ font-family:'Noto Serif SC', serif; font-weight:700; font-size:19px; }
   .brand .title .vi{ font-size:12px; color:var(--ink-faint); letter-spacing:0.06em; text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
- 
+
   nav.tabs{
     display:flex;
     gap:4px;
@@ -113,10 +133,73 @@
     outline:2px solid var(--seal);
     outline-offset:2px;
   }
- 
+
+  .theme-toggle{
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--ink-soft);
+    padding:8px 14px;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:12.5px;
+    font-family:'IBM Plex Mono', monospace;
+    white-space:nowrap;
+  }
+  .theme-toggle:hover{ border-color:var(--seal); color:var(--seal); }
+
   .view{ display:none; }
   .view.active{ display:block; }
- 
+
+  /* ---------- backup banner ---------- */
+  .backup-banner{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:var(--seal);
+    color:var(--paper);
+    padding:11px 18px;
+    border-radius:10px;
+    margin-bottom:20px;
+    font-size:13px;
+    flex-wrap:wrap;
+  }
+  .backup-banner.show{ display:flex; }
+  .backup-banner-actions{ display:flex; gap:8px; flex:none; }
+  .backup-banner button{
+    border:1px solid var(--paper);
+    background:transparent;
+    color:var(--paper);
+    padding:5px 13px;
+    border-radius:999px;
+    font-size:12px;
+    cursor:pointer;
+    white-space:nowrap;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .backup-banner button:hover{ background:var(--paper); color:var(--seal); }
+
+  /* ---------- linked file panel ---------- */
+  .fs-panel{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    padding:13px 16px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .fs-panel.unsupported{ opacity:0.85; }
+  .fs-status{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .fs-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
   /* ---------- study view ---------- */
   .dir-toggle{
     display:flex;
@@ -140,7 +223,7 @@
   }
   .dir-toggle button.active{ background:var(--seal); color:var(--paper); }
   .dir-toggle button:hover:not(.active){ color:var(--ink); }
- 
+
   .session-bar{
     display:flex;
     gap:10px;
@@ -164,7 +247,7 @@
   .chip.due .dot{ background:var(--seal); }
   .chip.done .dot{ background:var(--jade); }
   .chip b{ font-family:'IBM Plex Mono', monospace; }
- 
+
   .stage{
     display:flex;
     flex-direction:column;
@@ -172,7 +255,7 @@
     min-height:420px;
     justify-content:center;
   }
- 
+
   .flash-wrap{
     width:100%;
     max-width:440px;
@@ -204,10 +287,10 @@
   }
   .face.front{}
   .face.back{ transform:rotateY(180deg); gap:10px; }
- 
+
   .face .tag-row{ position:absolute; top:14px; left:18px; display:flex; gap:6px; flex-wrap:wrap; max-width:70%; }
   .face .tag-row span{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-faint); border:1px solid var(--line); padding:2px 7px; border-radius:999px; }
- 
+
   .front .hanzi-big{
     font-size:clamp(3.4rem, 13vw, 5.6rem);
     font-weight:700;
@@ -236,7 +319,7 @@
     text-transform:uppercase;
     margin-bottom:2px;
   }
- 
+
   .back .pinyin{ font-family:'IBM Plex Mono', monospace; font-size:1.15rem; color:var(--seal); }
   .back .hanzi-small{ font-size:1.6rem; font-weight:600; margin-bottom:2px; }
   .back .meaning{ font-size:1.25rem; font-weight:500; margin-top:2px; }
@@ -255,7 +338,7 @@
     gap:6px;
   }
   .speaker-btn:hover{ border-color:var(--seal); color:var(--seal); }
- 
+
   .rate-row{
     display:grid;
     grid-template-columns:repeat(4,1fr);
@@ -285,7 +368,7 @@
   .rate-btn.good .label{ color:var(--jade); }
   .rate-btn.easy .label{ color:var(--seal); }
   .rate-row.disabled{ opacity:0; pointer-events:none; }
- 
+
   .flip-cta{
     margin-top:22px;
     font-family:'IBM Plex Mono', monospace;
@@ -300,7 +383,7 @@
     background:var(--paper-dim);
     font-family:'IBM Plex Mono', monospace;
   }
- 
+
   .empty-state{
     text-align:center;
     padding:40px 20px;
@@ -318,7 +401,7 @@
     font-size:14px;
   }
   .btn-primary:hover{ background:var(--seal); }
- 
+
   /* ---------- manage view ---------- */
   .toolbar{
     display:flex;
@@ -348,7 +431,7 @@
     color:var(--ink-soft);
   }
   .tag-filters button.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
- 
+
   .add-btn{
     border:none;
     background:var(--seal);
@@ -360,7 +443,7 @@
     white-space:nowrap;
   }
   .add-btn:hover{ background:#8f2e24; }
- 
+
   .word-list{ display:flex; flex-direction:column; gap:8px; }
   .word-row{
     display:flex;
@@ -385,9 +468,9 @@
   .state-badge.review{ background:rgba(62,111,92,0.12); color:var(--jade); }
   .word-row .del{ flex:none; border:none; background:transparent; color:var(--ink-faint); cursor:pointer; font-size:16px; padding:4px 6px; }
   .word-row .del:hover{ color:var(--seal); }
- 
+
   .empty-manage{ text-align:center; padding:50px 20px; color:var(--ink-soft); }
- 
+
   /* ---------- stats view ---------- */
   .stats-grid{
     display:grid;
@@ -403,7 +486,7 @@
   }
   .stat-card .num{ font-family:'IBM Plex Mono',monospace; font-size:1.8rem; font-weight:600; }
   .stat-card .lbl{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
- 
+
   .gauge-row{
     display:flex;
     align-items:center;
@@ -430,7 +513,7 @@
   .gauge .inner span{ font-size:10px; color:var(--ink-faint); }
   .gauge-desc h3{ margin:0 0 6px; font-size:1.05rem; }
   .gauge-desc p{ margin:0; color:var(--ink-soft); font-size:13.5px; max-width:340px; }
- 
+
   /* ---------- modal ---------- */
   .overlay{
     position:fixed; inset:0;
@@ -468,7 +551,7 @@
   .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
   .btn-ghost{ border:1px solid var(--line); background:transparent; padding:9px 16px; border-radius:8px; cursor:pointer; font-size:13.5px; color:var(--ink-soft); }
   .btn-ghost:hover{ border-color:var(--ink); color:var(--ink); }
- 
+
   /* ---------- stamp fx ---------- */
   #stampFx{
     position:fixed;
@@ -491,7 +574,7 @@
     55%{ transform:translate(-50%,-50%) scale(1.02) rotate(-10deg); opacity:0.85; }
     100%{ transform:translate(-50%,-50%) scale(1) rotate(-10deg); opacity:0; }
   }
- 
+
   footer.credit{
     text-align:center;
     margin-top:50px;
@@ -499,7 +582,74 @@
     color:var(--ink-faint);
     font-family:'IBM Plex Mono',monospace;
   }
- 
+
+  /* ---------- guide view ---------- */
+  .guide{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    max-width:640px;
+    margin:0 auto;
+  }
+  .guide-block{
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    padding:20px 22px;
+  }
+  .guide-block h3{
+    margin:0 0 12px;
+    font-size:1.05rem;
+    color:var(--seal);
+  }
+  .guide-block p{
+    margin:0 0 10px;
+    font-size:14px;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  .guide-block p:last-child{ margin-bottom:0; }
+  .guide-block b{ color:var(--ink); }
+  .guide-keys{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin:12px 0;
+    padding:12px 14px;
+    background:var(--paper-dim);
+    border-radius:8px;
+  }
+  .guide-keys div{
+    font-size:13px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .guide-keys kbd{
+    border:1px solid var(--line);
+    background:var(--panel);
+    padding:2px 8px;
+    border-radius:4px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink);
+    flex:none;
+    min-width:16px;
+    text-align:center;
+  }
+  .guide-block ul{
+    margin:0;
+    padding-left:20px;
+  }
+  .guide-block li{
+    font-size:14px;
+    line-height:1.6;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .guide-block li:last-child{ margin-bottom:0; }
+
   @media (max-width:520px){
     .rate-btn .interval{ display:none; }
     .brand .title .vi{ display:none; }
@@ -511,22 +661,32 @@
 </head>
 <body>
 <div id="app">
- 
+
   <div class="topbar">
     <div class="brand">
       <div class="mark">忆</div>
       <div class="title">
         <div class="zh">字忆 · Tự Ức</div>
-        <div class="vi">Học Hán ngữ bằng SRS cho Diệp đạo hữu -_- </div>
+       <div class="vi">Học Hán ngữ bằng SRS cho Diệp đạo hữu -_- </div>
       </div>
     </div>
     <nav class="tabs">
       <button data-view="study" class="active">Học hôm nay</button>
       <button data-view="manage">Kho từ vựng</button>
       <button data-view="stats">Thống kê</button>
+      <button data-view="guide">Hướng dẫn</button>
     </nav>
+    <button class="theme-toggle" id="themeToggle">🌙 Tối</button>
   </div>
- 
+
+  <div class="backup-banner" id="backupBanner">
+    <span>💾 Đã lâu bạn chưa sao lưu dữ liệu — nên xuất file để tránh mất từ đã học.</span>
+    <div class="backup-banner-actions">
+      <button id="bannerExportBtn">Xuất ngay</button>
+      <button id="bannerSnoozeBtn">Nhắc lại sau 3 ngày</button>
+    </div>
+  </div>
+
   <!-- STUDY VIEW -->
   <section class="view active" id="view-study">
     <div class="dir-toggle" id="dirToggle">
@@ -536,9 +696,17 @@
     <div class="session-bar" id="sessionBar"></div>
     <div class="stage" id="stage"></div>
   </section>
- 
+
   <!-- MANAGE VIEW -->
   <section class="view" id="view-manage">
+    <div class="fs-panel" id="fsPanel">
+      <div class="fs-status" id="fsStatus">Đang kiểm tra liên kết file...</div>
+      <div class="fs-actions">
+        <button class="btn-ghost" id="linkFileBtn" style="display:none;">🔗 Liên kết file lưu trữ</button>
+        <button class="btn-ghost" id="reconnectFileBtn" style="display:none;">Kết nối lại</button>
+        <button class="btn-ghost" id="unlinkFileBtn" style="display:none;">Hủy liên kết</button>
+      </div>
+    </div>
     <div class="toolbar">
       <input type="text" class="search-input" id="searchInput" placeholder="Tìm theo chữ Hán, pinyin, nghĩa...">
       <button class="btn-ghost" id="exportBtn">Xuất dữ liệu</button>
@@ -550,7 +718,7 @@
     <div class="tag-filters" id="tagFilters"></div>
     <div class="word-list" id="wordList" style="margin-top:14px;"></div>
   </section>
- 
+
   <!-- STATS VIEW -->
   <section class="view" id="view-stats">
     <div class="stats-grid" id="statsGrid"></div>
@@ -564,10 +732,53 @@
       </div>
     </div>
   </section>
- 
+
+  <!-- GUIDE VIEW -->
+  <section class="view" id="view-guide">
+    <div class="guide">
+      <div class="guide-block">
+        <h3>1. Cách ôn tập hằng ngày</h3>
+        <p>Mỗi ngày mở tab <b>Học hôm nay</b>, app sẽ tự chọn ra các thẻ <b>cần ôn</b> (đã đến hạn) và một số <b>thẻ mới</b> (tối đa 10 từ/ngày cho mỗi chiều học). Nhấn vào thẻ hoặc phím <kbd>Space</kbd> để lật xem đáp án, sau đó tự đánh giá mức độ nhớ bằng 4 phím:</p>
+        <div class="guide-keys">
+          <div><kbd>1</kbd> Quên hoàn toàn — thẻ quay lại sau ~1 phút</div>
+          <div><kbd>2</kbd> Khó — thẻ quay lại sau ~12 giờ</div>
+          <div><kbd>3</kbd> Tốt — giãn cách vài ngày, tăng dần mỗi lần nhớ đúng</div>
+          <div><kbd>4</kbd> Dễ — giãn cách dài hơn hẳn, thưởng vì nhớ chắc</div>
+        </div>
+        <p>Đánh giá càng thật (đừng ngại bấm "Quên"), thuật toán càng xếp lịch ôn chính xác — đó là nguyên tắc cốt lõi của Spaced Repetition.</p>
+      </div>
+
+      <div class="guide-block">
+        <h3>2. Hai chiều học</h3>
+        <p><b>汉字 → Nghĩa:</b> nhìn chữ Hán, tự nhớ lại cách đọc và nghĩa — luyện khả năng <i>nhận diện</i>.</p>
+        <p><b>Nghĩa → 汉字:</b> nhìn nghĩa tiếng Việt, tự nhớ lại chữ Hán tương ứng — luyện khả năng <i>nhớ lại cách viết</i>.</p>
+        <p>Hai chiều có tiến trình ôn tập <b>hoàn toàn độc lập</b>: một từ có thể đã "thuộc" ở chiều này nhưng vẫn là "từ mới" ở chiều kia. Nên luyện đều cả hai để nhớ sâu và chắc hơn.</p>
+      </div>
+
+      <div class="guide-block">
+        <h3>3. Quản lý kho từ vựng</h3>
+        <p>Vào tab <b>Kho từ vựng</b> để thêm từ mới, sửa hoặc xóa từ đã có, tìm kiếm theo chữ Hán/pinyin/nghĩa, hoặc lọc theo tag (ví dụ HSK1, món ăn...).</p>
+        <p><b>Liên kết file lưu trữ</b> (Chrome/Edge): chọn một file .json trên máy, từ đó mọi thay đổi trong kho từ sẽ tự động được ghi thẳng vào file đó — dữ liệu sống ngoài bộ nhớ trình duyệt nên an toàn hơn nhiều, không sợ mất khi xóa cache. Nếu trình duyệt chưa hỗ trợ, app sẽ tự nhắc bạn sao lưu thủ công định kỳ.</p>
+        <p><b>Xuất dữ liệu:</b> tải file JSON chứa toàn bộ kho từ kèm tiến trình ôn tập — dùng để sao lưu hoặc chuyển sang máy khác.</p>
+        <p><b>Nhập dữ liệu:</b> nạp lại file JSON đã xuất trước đó. Từ nào trùng id sẽ được cập nhật, từ nào mới sẽ được thêm vào — không mất dữ liệu cũ.</p>
+        <p><b>Xuất chữ Hán (.txt):</b> tải file chỉ gồm các chữ Hán, mỗi từ một dòng, tiện để copy sang nơi khác.</p>
+      </div>
+
+      <div class="guide-block">
+        <h3>4. Vài mẹo học hiệu quả</h3>
+        <ul>
+          <li>Ôn đều mỗi ngày quan trọng hơn ôn dồn nhiều một lúc — SRS chỉ phát huy tác dụng khi bạn quay lại đúng lịch.</li>
+          <li>Thêm từ mới theo từng đợt nhỏ (10–20 từ), đừng nạp quá nhiều một lần khiến số thẻ mới/ngày bị dồn ứ.</li>
+          <li>Bấm nút 🔊 ở mặt sau để nghe phát âm chuẩn mỗi khi ôn — giúp nhớ cả mặt nghe, không chỉ mặt chữ.</li>
+          <li>Dữ liệu chỉ lưu trên trình duyệt này (không có tài khoản) — nên xuất file sao lưu định kỳ để tránh mất khi xóa cache hoặc đổi máy.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <footer class="credit">Dữ liệu được lưu trong trình duyệt của bạn — không cần tài khoản.</footer>
 </div>
- 
+
 <!-- ADD/EDIT MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal">
@@ -600,20 +811,36 @@
     </form>
   </div>
 </div>
- 
+
 <div id="stampFx"></div>
- 
+
 <script>
 (function(){
   "use strict";
- 
+
   /* ============ CONFIG ============ */
   const STORAGE_KEY = "hanzi_srs_cards_v1";
   const COUNTER_KEY = "hanzi_srs_new_counter_v1";
   const NEW_CARDS_PER_DAY = 10;
   const MIN_EASE = 1.3;
   let currentDirection = 'zh2vi'; // 'zh2vi' = Hán→Việt (nhận diện), 'vi2zh' = Việt→Hán (nhớ cách viết)
- 
+
+  /* ============ THEME ============ */
+  const THEME_KEY = "hanzi_srs_theme";
+  function loadTheme(){ return localStorage.getItem(THEME_KEY) || 'light'; }
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    const btn = document.getElementById('themeToggle');
+    if(btn) btn.textContent = t === 'dark' ? '☀️ Sáng' : '🌙 Tối';
+  }
+  let currentTheme = loadTheme();
+  applyTheme(currentTheme);
+  document.getElementById('themeToggle').addEventListener('click', ()=>{
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, currentTheme);
+    applyTheme(currentTheme);
+  });
+
   /* ============ STORAGE ============ */
   function loadCards(){
     try{
@@ -633,16 +860,29 @@
     }catch(e){ return {date:null, count:0}; }
   }
   function saveCounter(dir, c){ localStorage.setItem(COUNTER_KEY + '_' + dir, JSON.stringify(c)); }
- 
+
   function todayKey(){ return new Date().toDateString(); }
- 
+
   function newId(){
     return 'w_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
   }
- 
+
   function seedData(){
     const now = Date.now();
-    const words = [];
+    const words = [
+      ["你好","nǐ hǎo","Xin chào","你好，很高兴认识你。","HSK1"],
+      ["谢谢","xiè xie","Cảm ơn","谢谢你的帮助。","HSK1"],
+      ["再见","zài jiàn","Tạm biệt","明天见，再见！","HSK1"],
+      ["朋友","péng yǒu","Bạn bè","他是我最好的朋友。","HSK1"],
+      ["学习","xué xí","Học tập","我每天学习中文。","HSK1,giao tiếp"],
+      ["吃饭","chī fàn","Ăn cơm","我们一起去吃饭吧。","HSK1,món ăn"],
+      ["喜欢","xǐ huan","Thích","我喜欢喝茶。","HSK1"],
+      ["老师","lǎo shī","Giáo viên","老师today很忙。","HSK1"],
+      ["工作","gōng zuò","Công việc","他的工作很辛苦。","HSK2"],
+      ["漂亮","piào liang","Xinh đẹp","这条裙子很漂亮。","HSK2"],
+      ["天气","tiān qì","Thời tiết","今天天气真好。","HSK2"],
+      ["旅游","lǚ yóu","Du lịch","我打算下个月去旅游。","HSK2,giao tiếp"]
+    ];
     return words.map(w=>({
       id:newId(),
       hanzi:w[0], pinyin:w[1], meaning:w[2], example:w[3],
@@ -651,12 +891,15 @@
       due:now, created:now, lastReviewed:null
     }));
   }
- 
+
   let CARDS = loadCards();
   if(!CARDS){ CARDS = seedData(); saveCards(CARDS); }
- 
-  function persist(){ saveCards(CARDS); }
- 
+
+  function persist(){
+    saveCards(CARDS);
+    if(fsFileHandle){ writeToLinkedFile(); }
+  }
+
   /* ============ SRS ALGORITHM (SM-2 inspired) ============ */
   // Pure function: takes a plain {ease, reps, interval, lapses} snapshot and a rating,
   // returns the next snapshot. Used independently for each study direction.
@@ -667,7 +910,7 @@
     let interval = srs.interval || 0;
     let lapses = srs.lapses || 0;
     let dueDelayMs, nextInterval, state;
- 
+
     if(rating === 'again'){
       ease = Math.max(MIN_EASE, ease - 0.2);
       reps = 0;
@@ -699,10 +942,10 @@
       dueDelayMs = nextInterval*86400000;
       state = 'review';
     }
- 
+
     return { ease, reps, interval: nextInterval, due: now + dueDelayMs, state, lapses };
   }
- 
+
   function formatDelay(ms){
     const min = ms/60000;
     if(min < 60) return Math.round(min) + ' phút';
@@ -712,12 +955,12 @@
     if(days < 30) return (Math.round(days*10)/10) + ' ngày';
     return Math.round(days/30*10)/10 + ' tháng';
   }
- 
+
   function previewLabel(srs, rating){
     const next = schedule(srs, rating);
     return formatDelay(next.due - Date.now());
   }
- 
+
   // Read/write the SRS snapshot for a given direction without disturbing the other one.
   // 'zh2vi' (recognition) keeps using the original top-level fields for backward compatibility
   // with data already saved by earlier versions of the app. 'vi2zh' (recall/writing) is stored
@@ -740,26 +983,26 @@
       Object.assign(card.rev, { state:srs.state, ease:srs.ease, reps:srs.reps, interval:srs.interval, due:srs.due, lapses:srs.lapses, lastReviewed:Date.now() });
     }
   }
- 
+
   /* ============ SESSION QUEUE ============ */
   let queue = [];
   let currentCard = null;
   let flipped = false;
- 
+
   function buildQueue(dir){
     const now = Date.now();
     const withSrs = CARDS.map(c => ({ c, srs:getSrs(c, dir) }));
     const due = withSrs.filter(x => x.srs.state !== 'new' && x.srs.due <= now).sort((a,b)=>a.srs.due-b.srs.due);
     const newOnes = withSrs.filter(x => x.srs.state === 'new').sort((a,b)=>a.c.created-b.c.created);
- 
+
     let counter = loadCounter(dir);
     if(counter.date !== todayKey()){ counter = {date:todayKey(), count:0}; saveCounter(dir, counter); }
     const remainingSlots = Math.max(0, NEW_CARDS_PER_DAY - counter.count);
     const newSlice = newOnes.slice(0, remainingSlots);
- 
+
     return due.map(x=>x.c.id).concat(newSlice.map(x=>x.c.id));
   }
- 
+
   function nextDueTimeLabel(dir){
     const future = CARDS.map(c=>getSrs(c, dir)).filter(s => s.state !== 'new').sort((a,b)=>a.due-b.due)[0];
     if(!future) return null;
@@ -767,28 +1010,28 @@
     if(diff <= 0) return null;
     return formatDelay(diff);
   }
- 
+
   function getCardById(id){ return CARDS.find(c=>c.id===id); }
- 
+
   function startSession(){
     queue = buildQueue(currentDirection);
     renderSessionBar();
     drawNextCard();
   }
- 
+
   function renderSessionBar(){
     const bar = document.getElementById('sessionBar');
     const dir = currentDirection;
     const dueInQueue = queue.map(getCardById).filter(c=>c && getSrs(c,dir).state!=='new').length;
     const newInQueue = queue.map(getCardById).filter(c=>c && getSrs(c,dir).state==='new').length;
- 
+
     bar.innerHTML = `
       <div class="chip due"><span class="dot"></span>Cần ôn: <b>${dueInQueue}</b></div>
       <div class="chip new"><span class="dot"></span>Từ mới: <b>${newInQueue}</b></div>
       <div class="chip done"><span class="dot"></span>Tổng kho: <b>${CARDS.length}</b></div>
     `;
   }
- 
+
   function drawNextCard(){
     flipped = false;
     if(queue.length === 0){
@@ -802,7 +1045,7 @@
     renderStage();
     renderSessionBar();
   }
- 
+
   function renderEmptyState(){
     const stage = document.getElementById('stage');
     const nextLabel = nextDueTimeLabel(currentDirection);
@@ -816,18 +1059,18 @@
     `;
     document.getElementById('goManageBtn').addEventListener('click', ()=>switchView('manage'));
   }
- 
+
   function renderStage(){
     const stage = document.getElementById('stage');
     const c = currentCard;
     const dir = currentDirection;
     const tagsHtml = (c.tags||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('');
     const exampleHtml = c.example ? `<div class="example">${escapeHtml(c.example)}</div>` : '';
- 
+
     const frontHtml = dir === 'zh2vi'
       ? `<div class="hanzi-big hanzi">${escapeHtml(c.hanzi)}</div>`
       : `<div class="meaning-big">${escapeHtml(c.meaning)}</div>`;
- 
+
     const backHtml = dir === 'zh2vi'
       ? `<div class="hanzi-small hanzi">${escapeHtml(c.hanzi)}</div>
          <div class="pinyin mono">${escapeHtml(c.pinyin)}</div>
@@ -837,11 +1080,11 @@
          <div class="hanzi-small hanzi" style="font-size:2.4rem;">${escapeHtml(c.hanzi)}</div>
          <div class="pinyin mono">${escapeHtml(c.pinyin)}</div>
          ${exampleHtml}`;
- 
+
     const frontHint = dir === 'zh2vi'
       ? 'Nhấn Space hoặc chạm để lật thẻ'
       : 'Hãy hình dung / viết ra chữ Hán, rồi lật thẻ để so đáp án';
- 
+
     stage.innerHTML = `
       <div class="flash-wrap">
         <div class="flashcard" id="flashcard">
@@ -864,13 +1107,13 @@
         ${rateBtnHtml('easy','4','Dễ')}
       </div>
     `;
- 
+
     document.getElementById('flashcard').addEventListener('click', flipCard);
     document.getElementById('rateRow').querySelectorAll('.rate-btn').forEach(btn=>{
       btn.addEventListener('click', (e)=>{ e.stopPropagation(); rate(btn.dataset.rating); });
     });
   }
- 
+
   function rateBtnHtml(rating, key, label){
     const srs = currentCard ? getSrs(currentCard, currentDirection) : null;
     const interval = srs ? previewLabel(srs, rating) : '';
@@ -880,7 +1123,7 @@
       <span class="interval mono">${interval}</span>
     </button>`;
   }
- 
+
   function flipCard(){
     if(flipped) return;
     flipped = true;
@@ -890,7 +1133,7 @@
     const sb = document.getElementById('speakBtn');
     if(sb) sb.addEventListener('click', (e)=>{ e.stopPropagation(); speak(currentCard.hanzi); });
   }
- 
+
   function rate(rating){
     if(!currentCard || !flipped) return;
     const dir = currentDirection;
@@ -899,16 +1142,16 @@
     const updated = schedule(srs, rating);
     setSrs(currentCard, dir, updated);
     persist();
- 
+
     if(wasNew){
       let counter = loadCounter(dir);
       if(counter.date !== todayKey()) counter = {date:todayKey(), count:0};
       counter.count += 1;
       saveCounter(dir, counter);
     }
- 
+
     stampFeedback(rating);
- 
+
     queue.shift();
     if(rating === 'again'){
       // resurface soon within the same session
@@ -917,7 +1160,7 @@
     }
     setTimeout(drawNextCard, 260);
   }
- 
+
   function stampFeedback(rating){
     const el = document.getElementById('stampFx');
     const map = {
@@ -933,7 +1176,7 @@
     void el.offsetWidth; // restart animation
     el.classList.add('show');
   }
- 
+
   /* ============ TTS ============ */
   let voicesCache = null;
   function getZhVoice(){
@@ -958,7 +1201,7 @@
       speechSynthesis.speak(u);
     }catch(e){ /* TTS not available, fail silently */ }
   }
- 
+
   /* ============ VIEW SWITCHING ============ */
   function switchView(name){
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -973,7 +1216,7 @@
   document.querySelectorAll('nav.tabs button').forEach(b=>{
     b.addEventListener('click', ()=>switchView(b.dataset.view));
   });
- 
+
   document.getElementById('dirToggle').querySelectorAll('button').forEach(b=>{
     b.addEventListener('click', ()=>{
       if(b.dataset.dir === currentDirection) return;
@@ -982,17 +1225,17 @@
       startSession();
     });
   });
- 
+
   /* ============ MANAGE VIEW ============ */
   let activeTagFilter = null;
   let searchTerm = '';
- 
+
   function allTags(){
     const set = new Set();
     CARDS.forEach(c=>(c.tags||[]).forEach(t=>set.add(t)));
     return Array.from(set).sort();
   }
- 
+
   function renderManage(){
     const filters = document.getElementById('tagFilters');
     const tags = allTags();
@@ -1005,7 +1248,7 @@
     });
     renderWordList();
   }
- 
+
   function renderWordList(){
     const list = document.getElementById('wordList');
     let items = CARDS.slice().sort((a,b)=>b.created-a.created);
@@ -1037,7 +1280,7 @@
         <button class="del" title="Xóa từ" data-id="${c.id}">✕</button>
       </div>
     `).join('');
- 
+
     list.querySelectorAll('.word-row').forEach(row=>{
       row.addEventListener('click', (e)=>{
         if(e.target.classList.contains('del')) return;
@@ -1051,30 +1294,30 @@
       });
     });
   }
- 
+
   function stateLabel(s){
     if(s==='new') return 'Mới';
     if(s==='learning') return 'Đang học';
     return 'Đã ôn';
   }
- 
+
   document.getElementById('searchInput').addEventListener('input', (e)=>{
     searchTerm = e.target.value;
     renderWordList();
   });
- 
+
   function deleteWord(id){
     if(!confirm('Xóa từ này khỏi kho từ vựng?')) return;
     CARDS = CARDS.filter(c=>c.id!==id);
     persist();
     renderManage();
   }
- 
+
   /* ============ MODAL (ADD / EDIT) ============ */
   const overlay = document.getElementById('overlay');
   const form = document.getElementById('wordForm');
   let editingId = null;
- 
+
   function openAddModal(){
     editingId = null;
     document.getElementById('modalTitle').textContent = 'Thêm từ mới';
@@ -1095,11 +1338,11 @@
     overlay.classList.add('show');
   }
   function closeModal(){ overlay.classList.remove('show'); editingId = null; }
- 
+
   document.getElementById('addBtn').addEventListener('click', openAddModal);
   document.getElementById('cancelBtn').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
- 
+
   form.addEventListener('submit', (e)=>{
     e.preventDefault();
     const hanzi = document.getElementById('f-hanzi').value.trim();
@@ -1107,9 +1350,9 @@
     const meaning = document.getElementById('f-meaning').value.trim();
     const example = document.getElementById('f-example').value.trim();
     const tags = document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
- 
+
     if(!hanzi || !pinyin || !meaning){ return; }
- 
+
     if(editingId){
       const c = getCardById(editingId);
       Object.assign(c, {hanzi, pinyin, meaning, example, tags});
@@ -1124,16 +1367,19 @@
     closeModal();
     renderManage();
   });
- 
+
   /* ============ EXPORT / IMPORT ============ */
-  function exportJSON(){
-    const payload = {
+  function buildExportPayload(){
+    return {
       exportedAt: new Date().toISOString(),
       app: 'hanzi-srs',
       version: 1,
       cards: CARDS
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  }
+
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify(buildExportPayload(), null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const stamp = new Date().toISOString().slice(0,10);
@@ -1143,40 +1389,49 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+    markExported();
+    checkBackupReminder();
   }
- 
+
+  // Shared upsert logic: merges an array of plain word objects into CARDS.
+  // Cards with a matching id are updated in place; everything else is added as new.
+  function importCardsArray(incoming){
+    let added = 0, updated = 0, skipped = 0;
+    incoming.forEach(w=>{
+      if(!w || !w.hanzi || !w.pinyin || !w.meaning){ skipped++; return; }
+      const existing = w.id ? getCardById(w.id) : null;
+      if(existing){
+        Object.assign(existing, w);
+        updated++;
+      } else {
+        CARDS.push(Object.assign({
+          id:newId(), state:'new', ease:2.5, reps:0, interval:0, lapses:0,
+          due:Date.now(), created:Date.now(), lastReviewed:null, tags:[]
+        }, w, { id: newId() })); // always assign a fresh id to avoid collisions across devices
+        added++;
+      }
+    });
+    if(added || updated) persist();
+    return { added, updated, skipped };
+  }
+
   function importJSONFile(file){
     const reader = new FileReader();
     reader.onload = (e)=>{
       let data;
       try{ data = JSON.parse(e.target.result); }
       catch(err){ alert('File không hợp lệ — không đọc được JSON.'); return; }
- 
+
       const incoming = Array.isArray(data) ? data : (Array.isArray(data.cards) ? data.cards : null);
       if(!incoming){ alert('File không đúng định dạng dữ liệu từ vựng.'); return; }
- 
-      let added = 0, updated = 0, skipped = 0;
-      incoming.forEach(w=>{
-        if(!w || !w.hanzi || !w.pinyin || !w.meaning){ skipped++; return; }
-        const existing = w.id ? getCardById(w.id) : null;
-        if(existing){
-          Object.assign(existing, w);
-          updated++;
-        } else {
-          CARDS.push(Object.assign({
-            id:newId(), state:'new', ease:2.5, reps:0, interval:0, lapses:0,
-            due:Date.now(), created:Date.now(), lastReviewed:null, tags:[]
-          }, w, { id: newId() })); // always assign a fresh id to avoid collisions across devices
-          added++;
-        }
-      });
-      persist();
+
+      const { added, updated, skipped } = importCardsArray(incoming);
       renderManage();
       alert(`Nhập xong: ${added} từ mới, ${updated} từ cập nhật, ${skipped} dòng bị bỏ qua.`);
     };
     reader.readAsText(file);
   }
- 
+
   function exportHanziTxt(){
     if(CARDS.length === 0){ alert('Kho từ vựng đang trống.'); return; }
     const lines = CARDS.slice().sort((a,b)=>a.created-b.created).map(c=>c.hanzi).join('\n');
@@ -1191,7 +1446,7 @@
     a.remove();
     URL.revokeObjectURL(url);
   }
- 
+
   document.getElementById('exportBtn').addEventListener('click', exportJSON);
   document.getElementById('exportTxtBtn').addEventListener('click', exportHanziTxt);
   document.getElementById('importBtn').addEventListener('click', ()=>{
@@ -1202,7 +1457,222 @@
     if(file) importJSONFile(file);
     e.target.value = '';
   });
- 
+
+  /* ============ LINKED FILE (File System Access API) ============ */
+  const FS_SUPPORTED = 'showSaveFilePicker' in window && 'indexedDB' in window;
+  const IDB_NAME = 'hanzi_srs_fs';
+  const IDB_STORE = 'handles';
+  let fsFileHandle = null;
+  let pendingFileHandle = null;
+
+  function idbOpen(){
+    return new Promise((resolve, reject)=>{
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = ()=>{ req.result.createObjectStore(IDB_STORE); };
+      req.onsuccess = ()=>resolve(req.result);
+      req.onerror = ()=>reject(req.error);
+    });
+  }
+  async function idbSetHandle(handle){
+    const db = await idbOpen();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(handle, 'vocabFile');
+      tx.oncomplete = ()=>resolve();
+      tx.onerror = ()=>reject(tx.error);
+    });
+  }
+  async function idbGetHandle(){
+    const db = await idbOpen();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get('vocabFile');
+      req.onsuccess = ()=>resolve(req.result || null);
+      req.onerror = ()=>reject(req.error);
+    });
+  }
+  async function idbClearHandle(){
+    const db = await idbOpen();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete('vocabFile');
+      tx.oncomplete = ()=>resolve();
+      tx.onerror = ()=>reject(tx.error);
+    });
+  }
+
+  async function writeToLinkedFile(){
+    if(!fsFileHandle) return;
+    try{
+      const writable = await fsFileHandle.createWritable();
+      await writable.write(JSON.stringify(buildExportPayload(), null, 2));
+      await writable.close();
+      updateFsStatus();
+    }catch(e){
+      console.error('Sync to file failed', e);
+      updateFsStatus('Lỗi khi lưu vào file — hãy thử liên kết lại.');
+    }
+  }
+
+  async function linkStorageFile(){
+    if(!FS_SUPPORTED){
+      alert('Trình duyệt này chưa hỗ trợ liên kết file trực tiếp. Hãy dùng Chrome hoặc Edge, hoặc dùng Xuất/Nhập dữ liệu thủ công bên dưới.');
+      return;
+    }
+    try{
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'hanzi-srs-data.json',
+        types: [{ description:'JSON', accept:{'application/json':['.json']} }]
+      });
+
+      let existingCards = null;
+      try{
+        const file = await handle.getFile();
+        const text = await file.text();
+        if(text && text.trim()){
+          const data = JSON.parse(text);
+          const incoming = Array.isArray(data) ? data : (Array.isArray(data.cards) ? data.cards : null);
+          if(incoming && incoming.length) existingCards = incoming;
+        }
+      }catch(e){ /* file trống hoặc không đọc được, bỏ qua */ }
+
+      if(existingCards){
+        const doImport = confirm(`File này đang có ${existingCards.length} từ. Bấm OK để nhập (gộp) dữ liệu đó vào kho hiện tại, hoặc Hủy để giữ nguyên kho hiện tại và ghi đè file.`);
+        if(doImport) importCardsArray(existingCards);
+      }
+
+      fsFileHandle = handle;
+      pendingFileHandle = null;
+      await idbSetHandle(handle);
+      await writeToLinkedFile();
+      checkBackupReminder();
+    }catch(err){
+      if(err.name !== 'AbortError') console.error(err);
+    }
+  }
+
+  async function reconnectStorageFile(){
+    if(!pendingFileHandle) return;
+    try{
+      const perm = await pendingFileHandle.requestPermission({mode:'readwrite'});
+      if(perm === 'granted'){
+        fsFileHandle = pendingFileHandle;
+        pendingFileHandle = null;
+        updateFsStatus();
+        await writeToLinkedFile();
+        checkBackupReminder();
+      } else {
+        alert('Bạn chưa cấp quyền truy cập file.');
+      }
+    }catch(e){ console.error(e); }
+  }
+
+  async function unlinkStorageFile(){
+    fsFileHandle = null;
+    pendingFileHandle = null;
+    try{ await idbClearHandle(); }catch(e){}
+    updateFsStatus();
+    checkBackupReminder();
+  }
+
+  async function restoreFileHandle(){
+    if(!FS_SUPPORTED) { updateFsStatus(); return; }
+    try{
+      const handle = await idbGetHandle();
+      if(!handle){ updateFsStatus(); return; }
+      const perm = await handle.queryPermission({mode:'readwrite'});
+      if(perm === 'granted'){
+        fsFileHandle = handle;
+      } else {
+        pendingFileHandle = handle;
+      }
+      updateFsStatus();
+      checkBackupReminder();
+    }catch(e){ console.error(e); updateFsStatus(); }
+  }
+
+  function updateFsStatus(msg){
+    const statusEl = document.getElementById('fsStatus');
+    const linkBtn = document.getElementById('linkFileBtn');
+    const reconnectBtn = document.getElementById('reconnectFileBtn');
+    const unlinkBtn = document.getElementById('unlinkFileBtn');
+    const panel = document.getElementById('fsPanel');
+    if(!statusEl) return;
+
+    if(!FS_SUPPORTED){
+      panel.classList.add('unsupported');
+      statusEl.textContent = 'Trình duyệt này chưa hỗ trợ liên kết file trực tiếp — hãy dùng Xuất/Nhập dữ liệu thủ công.';
+      linkBtn.style.display = 'none';
+      reconnectBtn.style.display = 'none';
+      unlinkBtn.style.display = 'none';
+      return;
+    }
+
+    if(msg){ statusEl.textContent = msg; return; }
+
+    if(fsFileHandle){
+      statusEl.textContent = `Đã liên kết: ${fsFileHandle.name} — tự động lưu mỗi khi có thay đổi.`;
+      linkBtn.style.display = 'none';
+      reconnectBtn.style.display = 'none';
+      unlinkBtn.style.display = 'inline-block';
+    } else if(pendingFileHandle){
+      statusEl.textContent = `Từng liên kết với "${pendingFileHandle.name}" — bấm "Kết nối lại" để tiếp tục tự động lưu.`;
+      linkBtn.style.display = 'none';
+      reconnectBtn.style.display = 'inline-block';
+      unlinkBtn.style.display = 'inline-block';
+    } else {
+      statusEl.textContent = 'Chưa liên kết file nào — dữ liệu chỉ đang lưu trong trình duyệt này.';
+      linkBtn.style.display = 'inline-block';
+      reconnectBtn.style.display = 'none';
+      unlinkBtn.style.display = 'none';
+    }
+  }
+
+  document.getElementById('linkFileBtn').addEventListener('click', linkStorageFile);
+  document.getElementById('reconnectFileBtn').addEventListener('click', reconnectStorageFile);
+  document.getElementById('unlinkFileBtn').addEventListener('click', ()=>{
+    if(confirm('Hủy liên kết file? App sẽ ngừng tự động lưu vào file này (file cũ vẫn giữ nguyên dữ liệu đã lưu lần cuối).')){
+      unlinkStorageFile();
+    }
+  });
+
+  /* ============ BACKUP REMINDER ============ */
+  const BACKUP_REMIND_KEY = 'hanzi_srs_last_export';
+  const BACKUP_SNOOZE_KEY = 'hanzi_srs_backup_snooze';
+  const BACKUP_INTERVAL_DAYS = 7;
+
+  function markExported(){ localStorage.setItem(BACKUP_REMIND_KEY, String(Date.now())); }
+  function getLastExport(){
+    const v = localStorage.getItem(BACKUP_REMIND_KEY);
+    return v ? parseInt(v, 10) : null;
+  }
+  function getSnoozeUntil(){
+    const v = localStorage.getItem(BACKUP_SNOOZE_KEY);
+    return v ? parseInt(v, 10) : 0;
+  }
+  function snoozeBackupReminder(days){
+    localStorage.setItem(BACKUP_SNOOZE_KEY, String(Date.now() + days*86400000));
+    document.getElementById('backupBanner').classList.remove('show');
+  }
+
+  function checkBackupReminder(){
+    const banner = document.getElementById('backupBanner');
+    if(!banner) return;
+    if(fsFileHandle){ banner.classList.remove('show'); return; } // linked file already auto-saves safely
+    if(CARDS.length === 0){ banner.classList.remove('show'); return; }
+    const last = getLastExport();
+    const daysSince = last ? (Date.now() - last) / 86400000 : Infinity;
+    const snoozeUntil = getSnoozeUntil();
+    if(daysSince >= BACKUP_INTERVAL_DAYS && Date.now() > snoozeUntil){
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+
+  document.getElementById('bannerExportBtn').addEventListener('click', exportJSON);
+  document.getElementById('bannerSnoozeBtn').addEventListener('click', ()=>snoozeBackupReminder(3));
+
   /* ============ STATS VIEW ============ */
   function renderStats(){
     const total = CARDS.length;
@@ -1213,7 +1683,7 @@
     const dueNow = CARDS.filter(c=>c.state!=='new' && c.due<=now).length;
     const todayStart = new Date(); todayStart.setHours(0,0,0,0);
     const reviewedToday = CARDS.filter(c=>c.lastReviewed && c.lastReviewed >= todayStart.getTime()).length;
- 
+
     document.getElementById('statsGrid').innerHTML = `
       <div class="stat-card"><div class="num mono">${total}</div><div class="lbl">Tổng số từ</div></div>
       <div class="stat-card"><div class="num mono">${newCount}</div><div class="lbl">Từ mới</div></div>
@@ -1221,20 +1691,20 @@
       <div class="stat-card"><div class="num mono">${dueNow}</div><div class="lbl">Cần ôn ngay</div></div>
       <div class="stat-card"><div class="num mono">${reviewedToday}</div><div class="lbl">Đã ôn hôm nay</div></div>
     `;
- 
+
     const pct = total ? Math.round((reviewCount/total)*100) : 0;
     document.getElementById('gaugePct').textContent = pct + '%';
     document.getElementById('gaugeOuter').style.background =
       `conic-gradient(var(--jade) ${pct}%, var(--line-soft) 0)`;
   }
- 
+
   /* ============ UTIL ============ */
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, s=>({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[s]));
   }
- 
+
   /* ============ KEYBOARD SHORTCUTS ============ */
   document.addEventListener('keydown', (e)=>{
     const activeView = document.querySelector('.view.active').id;
@@ -1243,7 +1713,7 @@
     if(tag === 'INPUT' || tag === 'TEXTAREA') return;
     if(overlay.classList.contains('show')) return;
     if(!currentCard) return;
- 
+
     if(e.code === 'Space'){
       e.preventDefault();
       if(!flipped) flipCard();
@@ -1253,10 +1723,12 @@
       rate(map[e.code]);
     }
   });
- 
+
   /* ============ INIT ============ */
   startSession();
- 
+  restoreFileHandle();
+  checkBackupReminder();
+
 })();
 </script>
 </body>
