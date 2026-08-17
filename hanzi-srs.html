@@ -667,7 +667,7 @@
       <div class="mark">忆</div>
       <div class="title">
         <div class="zh">字忆 · Tự Ức</div>
-       <div class="vi">Học Hán ngữ bằng SRS cho Diệp đạo hữu -_- </div>
+        <div class="vi">Học Hán ngữ bằng SRS cho Diệp đạo hữu -_- </div>
       </div>
     </div>
     <nav class="tabs">
@@ -713,6 +713,7 @@
       <button class="btn-ghost" id="exportTxtBtn">Xuất chữ Hán (.txt)</button>
       <button class="btn-ghost" id="importBtn">Nhập dữ liệu</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <button class="btn-ghost" id="dedupBtn">🧹 Dọn trùng lặp</button>
       <button class="add-btn" id="addBtn">+ Thêm từ</button>
     </div>
     <div class="tag-filters" id="tagFilters"></div>
@@ -1672,6 +1673,48 @@
 
   document.getElementById('bannerExportBtn').addEventListener('click', exportJSON);
   document.getElementById('bannerSnoozeBtn').addEventListener('click', ()=>snoozeBackupReminder(3));
+
+  /* ============ DEDUPLICATE ============ */
+  // When the same hanzi appears more than once (e.g. an old backup file got
+  // re-imported on top of newer data), keep the copy that reflects the most
+  // study progress and drop the rest.
+  function scoreCardForDedup(c){
+    let score = 0;
+    if(c.rev) score += 100000;               // has reverse-direction (Việt→Hán) progress
+    score += (c.reps || 0) * 1000;
+    score += (c.lastReviewed || 0) / 1e7;     // tie-break by recency
+    score += (c.interval || 0);
+    return score;
+  }
+
+  function findDuplicateGroups(){
+    const byHanzi = {};
+    CARDS.forEach(c=>{ (byHanzi[c.hanzi] = byHanzi[c.hanzi] || []).push(c); });
+    return Object.values(byHanzi).filter(list=>list.length > 1);
+  }
+
+  function runDeduplicate(){
+    const groups = findDuplicateGroups();
+    if(groups.length === 0){
+      alert('Không tìm thấy từ nào bị trùng lặp.');
+      return;
+    }
+    const extraCount = groups.reduce((sum,list)=>sum + list.length - 1, 0);
+    const ok = confirm(`Tìm thấy ${groups.length} chữ Hán bị trùng lặp (${extraCount} bản dư).\n\nBấm OK để giữ lại bản có tiến trình ôn tập gần nhất/nhiều nhất cho mỗi từ, và xóa các bản còn lại.`);
+    if(!ok) return;
+
+    const removeIds = new Set();
+    groups.forEach(list=>{
+      const sorted = list.slice().sort((a,b)=>scoreCardForDedup(b)-scoreCardForDedup(a));
+      sorted.slice(1).forEach(c=>removeIds.add(c.id));
+    });
+    CARDS = CARDS.filter(c=>!removeIds.has(c.id));
+    persist();
+    renderManage();
+    alert(`Đã dọn xong: xóa ${removeIds.size} bản trùng, giữ lại ${groups.length} từ với tiến trình ôn tập mới nhất.`);
+  }
+
+  document.getElementById('dedupBtn').addEventListener('click', runDeduplicate);
 
   /* ============ STATS VIEW ============ */
   function renderStats(){
