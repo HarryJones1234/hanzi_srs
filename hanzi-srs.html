@@ -118,35 +118,11 @@
   .view.active{ display:block; }
  
   /* ---------- study view ---------- */
-  .dir-toggle{
-    display:flex;
-    gap:4px;
-    background:var(--paper-dim);
-    padding:4px;
-    border-radius:999px;
-    width:max-content;
-    margin:0 auto 22px;
-  }
-  .dir-toggle button{
-    border:none;
-    background:transparent;
-    padding:8px 18px;
-    border-radius:999px;
-    cursor:pointer;
-    font-size:13px;
-    color:var(--ink-soft);
-    font-family:'IBM Plex Mono', monospace;
-    letter-spacing:0.02em;
-  }
-  .dir-toggle button.active{ background:var(--seal); color:var(--paper); }
-  .dir-toggle button:hover:not(.active){ color:var(--ink); }
- 
   .session-bar{
     display:flex;
     gap:10px;
     margin-bottom:26px;
     flex-wrap:wrap;
-    justify-content:center;
   }
   .chip{
     display:flex;
@@ -221,20 +197,6 @@
     color:var(--ink-faint);
     letter-spacing:0.05em;
     text-transform:uppercase;
-  }
-  .front .meaning-big{
-    font-size:clamp(1.6rem, 6.4vw, 2.4rem);
-    font-weight:600;
-    line-height:1.3;
-    max-width:320px;
-  }
-  .back .answer-label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px;
-    color:var(--ink-faint);
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    margin-bottom:2px;
   }
  
   .back .pinyin{ font-family:'IBM Plex Mono', monospace; font-size:1.15rem; color:var(--seal); }
@@ -517,7 +479,7 @@
       <div class="mark">忆</div>
       <div class="title">
         <div class="zh">字忆 · Tự Ức</div>
-        <div class="vi">Học Hán ngữ bằng SRS cho Diệp đạo hữu -_- </div>
+        <div class="vi">Học Hán ngữ bằng SRS</div>
       </div>
     </div>
     <nav class="tabs">
@@ -529,10 +491,6 @@
  
   <!-- STUDY VIEW -->
   <section class="view active" id="view-study">
-    <div class="dir-toggle" id="dirToggle">
-      <button data-dir="zh2vi" class="active">汉字 → Nghĩa</button>
-      <button data-dir="vi2zh">Nghĩa → 汉字</button>
-    </div>
     <div class="session-bar" id="sessionBar"></div>
     <div class="stage" id="stage"></div>
   </section>
@@ -612,7 +570,6 @@
   const COUNTER_KEY = "hanzi_srs_new_counter_v1";
   const NEW_CARDS_PER_DAY = 10;
   const MIN_EASE = 1.3;
-  let currentDirection = 'zh2vi'; // 'zh2vi' = Hán→Việt (nhận diện), 'vi2zh' = Việt→Hán (nhớ cách viết)
  
   /* ============ STORAGE ============ */
   function loadCards(){
@@ -625,14 +582,14 @@
   function saveCards(cards){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
   }
-  function loadCounter(dir){
+  function loadCounter(){
     try{
-      const raw = localStorage.getItem(COUNTER_KEY + '_' + dir);
+      const raw = localStorage.getItem(COUNTER_KEY);
       if(!raw) return {date:null, count:0};
       return JSON.parse(raw);
     }catch(e){ return {date:null, count:0}; }
   }
-  function saveCounter(dir, c){ localStorage.setItem(COUNTER_KEY + '_' + dir, JSON.stringify(c)); }
+  function saveCounter(c){ localStorage.setItem(COUNTER_KEY, JSON.stringify(c)); }
  
   function todayKey(){ return new Date().toDateString(); }
  
@@ -658,23 +615,21 @@
   function persist(){ saveCards(CARDS); }
  
   /* ============ SRS ALGORITHM (SM-2 inspired) ============ */
-  // Pure function: takes a plain {ease, reps, interval, lapses} snapshot and a rating,
-  // returns the next snapshot. Used independently for each study direction.
-  function schedule(srs, rating){
+  function computeNext(card, rating){
+    const c = Object.assign({}, card);
     const now = Date.now();
-    let ease = srs.ease || 2.5;
-    let reps = srs.reps || 0;
-    let interval = srs.interval || 0;
-    let lapses = srs.lapses || 0;
-    let dueDelayMs, nextInterval, state;
+    let ease = c.ease || 2.5;
+    let reps = c.reps || 0;
+    let interval = c.interval || 0;
+    let dueDelayMs, nextInterval;
  
     if(rating === 'again'){
       ease = Math.max(MIN_EASE, ease - 0.2);
       reps = 0;
       nextInterval = 1/1440; // 1 minute in days
       dueDelayMs = 60*1000;
-      lapses += 1;
-      state = 'learning';
+      c.lapses = (c.lapses||0) + 1;
+      c.state = 'learning';
     } else if(rating === 'hard'){
       ease = Math.max(MIN_EASE, ease - 0.15);
       if(reps < 2){
@@ -684,23 +639,28 @@
         nextInterval = Math.max(interval*1.2, interval + 0.5);
         dueDelayMs = nextInterval*86400000;
       }
-      state = 'learning';
+      c.state = 'learning';
     } else if(rating === 'good'){
       if(reps === 0) nextInterval = 1;
       else if(reps === 1) nextInterval = 3;
       else nextInterval = Math.round(interval*ease*10)/10;
       reps += 1;
       dueDelayMs = nextInterval*86400000;
-      state = 'review';
+      c.state = 'review';
     } else { // easy
       ease = Math.min(3.2, ease + 0.15);
       nextInterval = reps === 0 ? 4 : Math.round(interval*ease*1.3*10)/10;
       reps += 1;
       dueDelayMs = nextInterval*86400000;
-      state = 'review';
+      c.state = 'review';
     }
  
-    return { ease, reps, interval: nextInterval, due: now + dueDelayMs, state, lapses };
+    c.ease = ease;
+    c.reps = reps;
+    c.interval = nextInterval;
+    c.due = now + dueDelayMs;
+    c.lastReviewed = now;
+    return c;
   }
  
   function formatDelay(ms){
@@ -713,32 +673,10 @@
     return Math.round(days/30*10)/10 + ' tháng';
   }
  
-  function previewLabel(srs, rating){
-    const next = schedule(srs, rating);
+  function previewLabel(card, rating){
+    const before = card.due;
+    const next = computeNext(card, rating);
     return formatDelay(next.due - Date.now());
-  }
- 
-  // Read/write the SRS snapshot for a given direction without disturbing the other one.
-  // 'zh2vi' (recognition) keeps using the original top-level fields for backward compatibility
-  // with data already saved by earlier versions of the app. 'vi2zh' (recall/writing) is stored
-  // in a nested card.rev object, created lazily the first time it's actually reviewed.
-  function getSrs(card, dir){
-    if(dir === 'zh2vi'){
-      return { state:card.state, ease:card.ease, reps:card.reps, interval:card.interval, due:card.due, lapses:card.lapses };
-    }
-    const r = card.rev;
-    if(r) return { state:r.state, ease:r.ease, reps:r.reps, interval:r.interval, due:r.due, lapses:r.lapses };
-    return { state:'new', ease:2.5, reps:0, interval:0, due:card.created || Date.now(), lapses:0 };
-  }
-  function setSrs(card, dir, srs){
-    if(dir === 'zh2vi'){
-      card.state = srs.state; card.ease = srs.ease; card.reps = srs.reps;
-      card.interval = srs.interval; card.due = srs.due; card.lapses = srs.lapses;
-      card.lastReviewed = Date.now();
-    } else {
-      if(!card.rev) card.rev = {};
-      Object.assign(card.rev, { state:srs.state, ease:srs.ease, reps:srs.reps, interval:srs.interval, due:srs.due, lapses:srs.lapses, lastReviewed:Date.now() });
-    }
   }
  
   /* ============ SESSION QUEUE ============ */
@@ -746,22 +684,21 @@
   let currentCard = null;
   let flipped = false;
  
-  function buildQueue(dir){
+  function buildQueue(){
     const now = Date.now();
-    const withSrs = CARDS.map(c => ({ c, srs:getSrs(c, dir) }));
-    const due = withSrs.filter(x => x.srs.state !== 'new' && x.srs.due <= now).sort((a,b)=>a.srs.due-b.srs.due);
-    const newOnes = withSrs.filter(x => x.srs.state === 'new').sort((a,b)=>a.c.created-b.c.created);
+    const due = CARDS.filter(c => c.state !== 'new' && c.due <= now).sort((a,b)=>a.due-b.due);
+    const newOnes = CARDS.filter(c => c.state === 'new').sort((a,b)=>a.created-b.created);
  
-    let counter = loadCounter(dir);
-    if(counter.date !== todayKey()){ counter = {date:todayKey(), count:0}; saveCounter(dir, counter); }
+    let counter = loadCounter();
+    if(counter.date !== todayKey()){ counter = {date:todayKey(), count:0}; saveCounter(counter); }
     const remainingSlots = Math.max(0, NEW_CARDS_PER_DAY - counter.count);
     const newSlice = newOnes.slice(0, remainingSlots);
  
-    return due.map(x=>x.c.id).concat(newSlice.map(x=>x.c.id));
+    return due.map(c=>c.id).concat(newSlice.map(c=>c.id));
   }
  
-  function nextDueTimeLabel(dir){
-    const future = CARDS.map(c=>getSrs(c, dir)).filter(s => s.state !== 'new').sort((a,b)=>a.due-b.due)[0];
+  function nextDueTimeLabel(){
+    const future = CARDS.filter(c => c.state !== 'new').sort((a,b)=>a.due-b.due)[0];
     if(!future) return null;
     const diff = future.due - Date.now();
     if(diff <= 0) return null;
@@ -771,16 +708,20 @@
   function getCardById(id){ return CARDS.find(c=>c.id===id); }
  
   function startSession(){
-    queue = buildQueue(currentDirection);
+    queue = buildQueue();
     renderSessionBar();
     drawNextCard();
   }
  
   function renderSessionBar(){
     const bar = document.getElementById('sessionBar');
-    const dir = currentDirection;
-    const dueInQueue = queue.map(getCardById).filter(c=>c && getSrs(c,dir).state!=='new').length;
-    const newInQueue = queue.map(getCardById).filter(c=>c && getSrs(c,dir).state==='new').length;
+    const now = Date.now();
+    const dueCount = CARDS.filter(c=>c.state!=='new' && c.due<=now).length + queue.filter(id=>{
+      const c=getCardById(id); return c && c.state!=='new';
+    }).length;
+    // simpler: recompute directly from queue + remaining
+    const dueInQueue = queue.map(getCardById).filter(c=>c && c.state!=='new').length;
+    const newInQueue = queue.map(getCardById).filter(c=>c && c.state==='new').length;
  
     bar.innerHTML = `
       <div class="chip due"><span class="dot"></span>Cần ôn: <b>${dueInQueue}</b></div>
@@ -805,7 +746,7 @@
  
   function renderEmptyState(){
     const stage = document.getElementById('stage');
-    const nextLabel = nextDueTimeLabel(currentDirection);
+    const nextLabel = nextDueTimeLabel();
     stage.innerHTML = `
       <div class="empty-state">
         <div class="glyph">好</div>
@@ -820,39 +761,22 @@
   function renderStage(){
     const stage = document.getElementById('stage');
     const c = currentCard;
-    const dir = currentDirection;
     const tagsHtml = (c.tags||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('');
-    const exampleHtml = c.example ? `<div class="example">${escapeHtml(c.example)}</div>` : '';
- 
-    const frontHtml = dir === 'zh2vi'
-      ? `<div class="hanzi-big hanzi">${escapeHtml(c.hanzi)}</div>`
-      : `<div class="meaning-big">${escapeHtml(c.meaning)}</div>`;
- 
-    const backHtml = dir === 'zh2vi'
-      ? `<div class="hanzi-small hanzi">${escapeHtml(c.hanzi)}</div>
-         <div class="pinyin mono">${escapeHtml(c.pinyin)}</div>
-         <div class="meaning">${escapeHtml(c.meaning)}</div>
-         ${exampleHtml}`
-      : `<div class="answer-label">Chữ Hán đúng là</div>
-         <div class="hanzi-small hanzi" style="font-size:2.4rem;">${escapeHtml(c.hanzi)}</div>
-         <div class="pinyin mono">${escapeHtml(c.pinyin)}</div>
-         ${exampleHtml}`;
- 
-    const frontHint = dir === 'zh2vi'
-      ? 'Nhấn Space hoặc chạm để lật thẻ'
-      : 'Hãy hình dung / viết ra chữ Hán, rồi lật thẻ để so đáp án';
  
     stage.innerHTML = `
       <div class="flash-wrap">
         <div class="flashcard" id="flashcard">
           <div class="face front">
             <div class="tag-row">${tagsHtml}</div>
-            ${frontHtml}
-            <div class="hint">${frontHint}</div>
+            <div class="hanzi-big hanzi">${escapeHtml(c.hanzi)}</div>
+            <div class="hint">Nhấn <kbd>Space</kbd> hoặc chạm để lật thẻ</div>
           </div>
           <div class="face back">
             <div class="tag-row">${tagsHtml}</div>
-            ${backHtml}
+            <div class="hanzi-small hanzi">${escapeHtml(c.hanzi)}</div>
+            <div class="pinyin mono">${escapeHtml(c.pinyin)}</div>
+            <div class="meaning">${escapeHtml(c.meaning)}</div>
+            ${c.example ? `<div class="example">${escapeHtml(c.example)}</div>` : ''}
             <button class="speaker-btn" id="speakBtn">🔊 Phát âm</button>
           </div>
         </div>
@@ -872,8 +796,7 @@
   }
  
   function rateBtnHtml(rating, key, label){
-    const srs = currentCard ? getSrs(currentCard, currentDirection) : null;
-    const interval = srs ? previewLabel(srs, rating) : '';
+    const interval = currentCard ? previewLabel(currentCard, rating) : '';
     return `<button class="rate-btn ${rating}" data-rating="${rating}">
       <span class="key">${key}</span>
       <span class="label">${label}</span>
@@ -893,18 +816,16 @@
  
   function rate(rating){
     if(!currentCard || !flipped) return;
-    const dir = currentDirection;
-    const srs = getSrs(currentCard, dir);
-    const wasNew = srs.state === 'new';
-    const updated = schedule(srs, rating);
-    setSrs(currentCard, dir, updated);
+    const wasNew = currentCard.state === 'new';
+    const updated = computeNext(currentCard, rating);
+    Object.assign(currentCard, updated);
     persist();
  
     if(wasNew){
-      let counter = loadCounter(dir);
+      let counter = loadCounter();
       if(counter.date !== todayKey()) counter = {date:todayKey(), count:0};
       counter.count += 1;
-      saveCounter(dir, counter);
+      saveCounter(counter);
     }
  
     stampFeedback(rating);
@@ -972,15 +893,6 @@
   }
   document.querySelectorAll('nav.tabs button').forEach(b=>{
     b.addEventListener('click', ()=>switchView(b.dataset.view));
-  });
- 
-  document.getElementById('dirToggle').querySelectorAll('button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      if(b.dataset.dir === currentDirection) return;
-      currentDirection = b.dataset.dir;
-      document.getElementById('dirToggle').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b));
-      startSession();
-    });
   });
  
   /* ============ MANAGE VIEW ============ */
